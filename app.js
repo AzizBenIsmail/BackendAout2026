@@ -12,7 +12,7 @@ require('dotenv').config(); // Importation du module dotenv pour charger les var
 const { connectToMongoDB } = require('./config/mogo.connection'); // Importation de la fonction connectToMongoDB depuis le fichier config/mogo.connection.js
 // Importation des routes
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/users.routes');
 
 // Création de l'application
 var app = express();
