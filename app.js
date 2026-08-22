@@ -10,9 +10,11 @@ const http = require('http'); // Importation du module HTTP pour créer un serve
 require('dotenv').config(); // Importation du module dotenv pour charger les variables d'environnement depuis le fichier .env
 
 const { connectToMongoDB } = require('./config/mogo.connection'); // Importation de la fonction connectToMongoDB depuis le fichier config/mogo.connection.js
+const { seedDefaultUsers } = require('./config/user.seed');
 // Importation des routes
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.routes');
+var carRouter = require('./routes/car.router');
 
 // Création de l'application
 var app = express();
@@ -26,6 +28,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // Middleware pour serv
 // Définition des routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter); 
+app.use('/cars', carRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,6 +49,12 @@ app.use(function(err, req, res, next) {
 const server = http.createServer(app); // Création du serveur HTTP avec l'application Express
 
 server.listen(process.env.port , () => { 
-  connectToMongoDB(); // Démarrage du serveur sur le port 5000
-  console.log(`Serveur démarré sur le port ${process.env.port}`);
+  connectToMongoDB()
+    .then(seedDefaultUsers)
+    .then(() => {
+      console.log(`Serveur démarré sur le port ${process.env.port}`);
+    })
+    .catch(() => {
+      process.exitCode = 1;
+    });
 });

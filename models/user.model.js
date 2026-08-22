@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     },
 
     //user
-    phone: Number,
+    phone: String,
     address: String,
 
     //admin
