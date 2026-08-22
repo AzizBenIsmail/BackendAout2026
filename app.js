@@ -11,6 +11,7 @@ require('dotenv').config(); // Importation du module dotenv pour charger les var
 
 const { connectToMongoDB } = require('./config/mogo.connection'); // Importation de la fonction connectToMongoDB depuis le fichier config/mogo.connection.js
 const { seedDefaultUsers } = require('./config/user.seed');
+const { seedDefaultCars } = require('./config/car.seed');
 // Importation des routes
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.routes');
@@ -51,6 +52,7 @@ const server = http.createServer(app); // Création du serveur HTTP avec l'appli
 server.listen(process.env.port , () => { 
   connectToMongoDB()
     .then(seedDefaultUsers)
+    .then(seedDefaultCars)
     .then(() => {
       console.log(`Serveur démarré sur le port ${process.env.port}`);
     })
