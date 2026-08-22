@@ -17,7 +17,17 @@ const userSchema = new mongoose.Schema({
 
     //admin
     experience: Number,
-    specialization: String
+    specialization: String,
+
+
+    car : { type: mongoose.Schema.Types.ObjectId, ref: 'Car' },  //One
+
+    cars : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Car' }],  //Many
+    
+    products : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]  //Many
+
+    
+
 
 }, { timestamps: true });
 

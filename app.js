@@ -16,6 +16,7 @@ const { seedDefaultCars } = require('./config/car.seed');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.routes');
 var carRouter = require('./routes/car.router');
+var productRouter = require('./routes/product.router');
 
 // Création de l'application
 var app = express();
@@ -30,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // Middleware pour serv
 app.use('/', indexRouter);
 app.use('/users', usersRouter); 
 app.use('/cars', carRouter);
+app.use('/products', productRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

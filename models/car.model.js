@@ -22,6 +22,11 @@ const carSchema = new mongoose.Schema({
 	seats: { type: Number, required: true, min: 1, max: 5 },
 	pricePerDay: { type: Number, required: true, min: 0 },
 	isAvailable: { type: Boolean, default: true },
+
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  //One
+
+    owners: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]  //Many
+
 }, { timestamps: true });
 
 const Car = mongoose.model('Car', carSchema);
