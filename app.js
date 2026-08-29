@@ -18,8 +18,12 @@ var usersRouter = require('./routes/users.routes');
 var carRouter = require('./routes/car.router');
 var productRouter = require('./routes/product.router');
 
+const authLogMiddleware = require('./middlewares/log.middlewares'); // Importation du middleware de logging personnalisé")
+
+
 // Création de l'application
 var app = express();
+app.use(authLogMiddleware);
 
 app.use(logger('dev')); // Middleware pour le logging des requêtes HTTP(200, 404, 500, etc.)
 app.use(express.json()); // Middleware pour parser le corps des requêtes en JSON {"key": "value", etc.}

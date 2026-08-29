@@ -11,3 +11,5 @@ router.post('/:id/buy', carController.buyCar);
 router.post('/:id/sell', carController.sellCar);
 
 module.exports = router;
+
+//crud => create, read, update, delete
