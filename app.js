@@ -23,12 +23,12 @@ const authLogMiddleware = require('./middlewares/log.middlewares'); // Importati
 
 // Création de l'application
 var app = express();
-app.use(authLogMiddleware);
 
 app.use(logger('dev')); // Middleware pour le logging des requêtes HTTP(200, 404, 500, etc.)
 app.use(express.json()); // Middleware pour parser le corps des requêtes en JSON {"key": "value", etc.}
 app.use(express.urlencoded({ extended: false })); // Middleware pour parser le corps des requêtes en URL-encoded (key=value&key2=value2, etc.)
 app.use(cookieParser()); // Middleware pour parser les cookies
+app.use(authLogMiddleware); // Le middleware de log est placé après les parseurs, pour qu'il puisse lire req.body et req.session de façon sûre.
 app.use(express.static(path.join(__dirname, 'public'))); // Middleware pour servir les fichiers statiques (images, CSS, JS, etc.) depuis le dossier public
 
 // Définition des routes
@@ -44,13 +44,17 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  // On envoie une réponse JSON au lieu de tenter de rendre une vue qui n'existe pas.
+  const statusCode = err.status || 500;
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Erreur interne du serveur',
+    error: req.app.get('env') === 'development' ? {
+      status: statusCode,
+      stack: err.stack
+    } : {}
+  });
 });
 
 const server = http.createServer(app); // Création du serveur HTTP avec l'application Express

@@ -1,5 +1,6 @@
 const UserModel = require('../models/user.model');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const { sendVerificationEmail } = require('../config/mailer');
 
 const createVerificationToken = () => crypto.randomBytes(32).toString('hex');
@@ -14,9 +15,10 @@ const sendUserVerificationEmail = async (user) => {
 
 module.exports.createUser = async (req, res) => {
     try {
-        const user = new UserModel({ ...req.body, emailVerified: false });
+        const passwordHash = await bcrypt.hash(req.body.password, 10);
+        const user = new UserModel({ ...req.body, password: passwordHash, emailVerified: false });
         await user.save();
-        await sendUserVerificationEmail(user);
+//        await sendUserVerificationEmail(user);
         res.status(201).json({ message: 'Compte cree. Consultez votre e-mail pour le verifier.', userId: user._id });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -92,8 +94,12 @@ module.exports.verifyEmail = async (req, res) => {
 
 module.exports.createUserAdmin = async (req, res) => {
     try {
-        // Ensure role is admin regardless of request body
-        const adminData = Object.assign({}, req.body, { role: 'admin', emailVerified: false });
+        const passwordHash = await bcrypt.hash(req.body.password, 10);
+        const adminData = Object.assign({}, req.body, {
+            password: passwordHash,
+            role: 'admin',
+            emailVerified: false
+        });
         const admin = new UserModel(adminData);
         await admin.save();
         await sendUserVerificationEmail(admin);
@@ -103,3 +109,38 @@ module.exports.createUserAdmin = async (req, res) => {
     }
 };
 
+const jwt = require('jsonwebtoken');
+module.exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await UserModel.findOne({ email }).select('+password');
+
+        if (!user) {
+            return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+        }
+
+        if (!user.emailVerified) {
+            return res.status(403).json({ message: 'Veuillez verifier votre adresse e-mail avant de vous connecter.' });
+        }
+
+        const token = jwt.sign({ id: user._id }, "net secret 9antra", { expiresIn: '1m' });
+        res.cookie('token', token, { httpOnly: true, expires: new Date(Date.now() + 60 * 1000) }); // Cookie expires in 1 minute
+        res.status(200).json({ message: 'Connexion reussie', token });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports.logout = async (req, res) => {
+    try {
+        res.clearCookie('token');
+        res.status(200).json({ message: 'Deconnexion reussie' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
